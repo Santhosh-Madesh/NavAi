@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Navaratri Goddess Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .slideshow-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .mySlides {
+      display: none;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 1s ease-in-out;
+    }
+    .fade {
+      animation: fadeEffect 1s ease-in-out;
+    }
+    @keyframes fadeEffect {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-cover bg-center"
+      style="background-image: url('https://www.shutterstock.com/image-illustration/jai-maa-durga-sherawali-mata-600nw-2373340007.jpg');">
+  {% load static %}
+
+  <header class="bg-red-700 text-yellow-100 py-6 text-center shadow-lg">
+    <h1 class="text-3xl font-bold tracking-wide flex items-center justify-center gap-2">
+      🪔 Navaratri Goddess Chatbot 🪔
+    </h1>
+    <p class="mt-2 text-yellow-200 italic">Seek blessings, stories, and divine guidance 🌸</p>
+  </header>
+
+  <main class="flex-1 flex justify-center items-center">
+    <div class="w-full max-w-2xl bg-white/90 rounded-2xl shadow-xl p-6 flex flex-col">
+      
+      <!-- Story Slideshow -->
+      <div id="story-slideshow" class="slideshow-container"></div>
+
+      <!-- Chat messages -->
+      <div id="chatbox" 
+           class="flex-1 overflow-y-auto space-y-4 p-4 border border-orange-300 rounded-xl bg-white/70">
+      </div>
+
+      <!-- Input -->
+      <div class="mt-4 flex gap-3 items-center">
+        <select id="lang" class="px-3 py-2 border border-orange-400 rounded-xl">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी (Hindi)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+        </select>
+        <input id="msg" type="text" placeholder="Ask the Goddess..." 
+               class="flex-1 px-4 py-3 rounded-xl border border-orange-400 focus:outline-none focus:ring-2 focus:ring-red-500"/>
+        <button onclick="send()" 
+                class="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl shadow-md hover:bg-red-500 transition">
+          ✨ Seek Blessing
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-red-700 text-yellow-100 py-4 text-center text-sm">
+    🌺 Celebrate Navaratri with divine stories & blessings 🌺
+  </footer>
+
+  <script>
+    let slideIndex = 0;
+    let slideshowImages = [];
+
+    function showSlides() {
+      const slides = document.querySelectorAll(".mySlides");
+      slides.forEach((slide, index) => {
+        slide.classList.remove("fade");
+        if (index === slideIndex) {
+          slide.classList.add("fade");
+          slide.style.display = "block";
+        } else {
+          slide.style.display = "none";
+        }
+      });
+      slideIndex = (slideIndex + 1) % slideshowImages.length;
+      setTimeout(showSlides, 4000);
+    }
+
+    function speak(text, lang) {
+      const voices = speechSynthesis.getVoices();
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // Set language
+      utterance.lang = lang === "hi" ? "hi-IN" : lang === "ta" ? "ta-IN" : "en-IN";
+      
+      // Set faster speech rate
+      utterance.rate = 1.3; // 1.3 = 30% faster
+
+      // Choose voice
+      const voice = voices.find(v => v.lang === utterance.lang) || null;
+      if (voice) utterance.voice = voice;
+
+      speechSynthesis.speak(utterance);
+    }
+
+    async function send() {
+      const msg = document.getElementById("msg").value;
+      const lang = document.getElementById("lang").value;
+      if (!msg.trim()) return;
+
+      const chatbox = document.getElementById("chatbox");
+      const slideshow = document.getElementById("story-slideshow");
+
+      // Replace previous messages with current user message
+      chatbox.innerHTML = `
+        <div class="text-right">
+          <p class="inline-block bg-orange-200 text-gray-800 px-4 py-2 rounded-xl shadow-md">
+            👤 You: ${msg}
+          </p>
+        </div>
+      `;
+
+      const res = await fetch("/chatbot/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: msg, lang: lang})
+      });
+
+      const data = await res.json();
+
+      // Add Goddess reply
+      chatbox.innerHTML += `
+        <div class="text-left">
+          <p class="inline-block bg-red-100 text-red-900 italic px-4 py-2 rounded-xl shadow-md">
+            🌸 Goddess: ${data.reply}
+          </p>
+        </div>
+      `;
+
+      // Audio
+      if (data.audio_url) {
+        const audio = new Audio(data.audio_url);
+        audio.play();
+      } else {
+        speak(data.reply, lang);
+      }
+
+      // Story slideshow (replace previous slideshow)
+      if (data.story_images && data.story_images.length > 0) {
+        slideshow.innerHTML = "";
+        slideshowImages = data.story_images;
+        slideshowImages.forEach((image) => {
+          const img = document.createElement("img");
+          img.src = image;
+          img.classList.add("mySlides");
+          slideshow.appendChild(img);
+        });
+        slideIndex = 0; // reset slideshow
+        showSlides();
+      }
+
+      document.getElementById("msg").value = "";
+    }
+  </script>
+</body>
+</html>
