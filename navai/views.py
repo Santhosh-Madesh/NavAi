@@ -6,6 +6,7 @@ import json
 from gtts import gTTS
 import os
 from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 
 # Gemini model
 model = genai.GenerativeModel("gemini-1.5-flash")
@@ -56,6 +57,8 @@ def chatbot(request):
             tts = gTTS(reply_text, lang=lang)
             tts.save(filepath)
             audio_url = f"{settings.MEDIA_URL}{filename}"
+            audio_url = request.build_absolute_uri(settings.MEDIA_URL + filename)
+            print(audio_url)
 
         # Story images fetched directly from the internet
         # Story images fetched directly from the internet (direct image URLs)
