@@ -2,4 +2,4 @@ django
 gunicorn
 google-generativeai
 requests
-gTTs
+gtts
