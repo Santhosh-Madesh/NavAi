@@ -1,3 +1,5 @@
-web: gunicorn projectname.wsgi
-django
+flask
+gunicorn
+google-generativeai
+requests
 gtts
