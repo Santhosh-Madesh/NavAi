@@ -1,4 +1,4 @@
-flask
+django
 gunicorn
 google-generativeai
 requests
