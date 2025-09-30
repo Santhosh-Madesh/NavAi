@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 import google.generativeai as genai
 
 GENAI_API_KEY = "AIzaSyAhEOxaREikKllKcPS8H6kv3FDHd-dqzzE"
+GENAI_API_KEY = "AIzaSyAdocA_7sXKnnkGWCYN5ZwpvWDV7WxEj8I"
 genai.configure(api_key=GENAI_API_KEY)
 
 
