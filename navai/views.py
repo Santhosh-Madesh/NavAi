@@ -10,7 +10,7 @@ from django.contrib.sites.shortcuts import get_current_site
 
 # Gemini model
 genai.configure(api_key=settings.GENAI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # Keep chat sessions per user in memory
 chat_sessions = {}
